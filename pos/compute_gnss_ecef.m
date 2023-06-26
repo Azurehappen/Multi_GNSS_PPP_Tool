@@ -124,13 +124,11 @@ for i = 1:p.inval:N
     cpt.elev = NaN(length(cpt.corr_range),1); cpt.az = NaN(length(cpt.corr_range),1);
     % trop delay and iono delay
     cpt.trop_delay = NaN(length(cpt.corr_range),1); cpt.iono_delay = NaN(length(cpt.corr_range),1);
-    if p.state0(1)==0
-        for kk = 1:3
-            [re_pos,clock_bias,~] = userpos(p,cpt);
-            p.state0 = [re_pos;clock_bias];
-            if p.post_mode == 1
-                p.mk = 1;
-            end
+    if isempty(log.epoch_t) || obs.datetime(i) - log.epoch_t(end) > seconds(1.5)
+        [re_pos,clock_bias,~] = userpos(p,cpt);
+        p.state0 = [re_pos;clock_bias];
+        if p.post_mode == 1
+            p.mk = 1;
         end
     end
     % Rotate the sat pos to common reference frame
@@ -153,7 +151,7 @@ for i = 1:p.inval:N
             cpt = trop_iono_compute(p,eph,cpt,obs,p.state0(1:3),tdoy,[],rt);
             cpt.corr_range = cpt.corr_range - cpt.trop_delay - cpt.iono_delay;
             [re_pos,clock_bias,res] = userpos(p,cpt);
-            [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos);
+            [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos,obs.datetime(i));
             %                     end
         case 1 % PPP
             tdoy = doy(obs.tr_prime(1:3,i)); % Day of year
@@ -173,7 +171,7 @@ for i = 1:p.inval:N
                     [re_pos,clock_bias,res] = userpos_2diff(p,cpt);
                 end
                 if ~isempty(re_pos)
-                    [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos);
+                    [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos,obs.datetime(i));
                 end
             end
         case 2 % DGNSS
@@ -186,7 +184,7 @@ for i = 1:p.inval:N
                     % cpt.corr_range,cpt.num_sv);
                     [re_pos,clock_bias,res] = userpos(p,cpt);
                     if ~isempty(re_pos)
-                        [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos);
+                        [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos,obs.datetime(i));
                     end
                 end
             else
@@ -202,7 +200,7 @@ for i = 1:p.inval:N
                 cpt.corr_range = cpt.corr_range - cpt.diff_corr;
                 [re_pos,clock_bias,res] = userpos(p,cpt);
                 if ~isempty(re_pos)
-                    [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos);
+                    [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos,obs.datetime(i));
                 end
             end
         otherwise

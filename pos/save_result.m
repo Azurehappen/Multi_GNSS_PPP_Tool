@@ -1,5 +1,6 @@
-function [log,state] = save_result(p,cpt,log,i,re_pos,clk_b,res,grdpos)
+function [log,state] = save_result(p,cpt,log,i,re_pos,clk_b,res,grdpos,epoch_t)
 
+log.epoch_t = [log.epoch_t, epoch_t];
 log.pos_ecef(:,i) = re_pos;
 state = [re_pos;clk_b];
 %------------------------%

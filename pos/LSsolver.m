@@ -23,7 +23,7 @@ for iter=1:p.Nls
     R(j)=norm(s_pos_ecef(:,j)-xk(1:3));
     V= (xk(1:3)-s_pos_ecef(:,j))'/R(j)+...
         [-s_pos_ecef(2,j)*p.omge/p.c s_pos_ecef(1,j)*p.omge/p.c 0]; 
-    H(j,:)=[V 1]; 
+    H(j,:)=[V 1];
     r(j) = R(j)+sagnac(p,s_pos_ecef(:,j),xk);
     if ~isempty(H_offset)
          ind = find(H_offset(j,:)==1);
