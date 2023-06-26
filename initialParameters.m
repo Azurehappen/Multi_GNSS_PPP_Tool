@@ -104,24 +104,24 @@ p.gps.mu = 3.986005e+14; % WGS84 value of the earth's gravitational constant for
 p.gps.OmegaDot_e = 7.2921151467e-5; % Earth rotation rate (rad/s)
 p.gps.F = -4.442807633e-10; % IS-GPS-200H page 96
 p.gps.message_duration = 7200; % Maximum time difference between obs data and eph message
-% Galileo Constants
-% Reference 'https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf'
-%---------------------------------------%
-p.gal.sys_num = 2;
-p.gal.mu = 3.986004418e+14; % Geocentric gravitational constant (m^3/s^2)
-p.gal.OmegaDot_e = 7.2921151467e-5; % mean angular velocity of the Earth
-p.gal.F = -4.442807309e-10; % Galileo-OS-SIS-ICD page 58
-p.gal.message_duration = 7200;
 % GLONASS Constants
 % Reference ''
 %---------------------------------------%
-p.glo.sys_num = 3;
+p.glo.sys_num = 2;
 p.glo.mu = 3.986004418e+14; % Geocentric gravitational constant (m^3/s^2)
 p.glo.OmegaDot_e = 7.2921151467e-5; % Earth's rotation rate
 p.glo.F = -2*sqrt(p.gal.mu)/(p.c^2); % 
 p.glo.a_e = 6378136; %  semi-major (equatorial) axis of the PZ-90 Earth’s ellipsoid
 p.glo.C_20 = 1082625.75e-9; %  second degree zonal coefficient of normal potential
 p.glo.message_duration = 1800; %54000;
+% Galileo Constants
+% Reference 'https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf'
+%---------------------------------------%
+p.gal.sys_num = 3;
+p.gal.mu = 3.986004418e+14; % Geocentric gravitational constant (m^3/s^2)
+p.gal.OmegaDot_e = 7.2921151467e-5; % mean angular velocity of the Earth
+p.gal.F = -4.442807309e-10; % Galileo-OS-SIS-ICD page 58
+p.gal.message_duration = 7200;
 % BeiDou Constants
 % Reference 'http://en.beidou.gov.cn/SYSTEMS/ICD/201902/P020190227702348791891.pdf'
 %---------------------------------------%

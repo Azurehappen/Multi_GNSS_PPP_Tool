@@ -6,6 +6,7 @@ function  log = compute_gnss_ecef(p,eph,obs)
 %----------------------------------%
 N = length(obs.tr_sow); % The number of positioning points
 % Initialize output
+log.epoch_t = datetime.empty;
 log.gpst = obs.tr_sow-obs.tr_sow(1);
 log.err = NaN(1,N); % The position (Norm) error between estimated pos and true pos
 log.hor_err = NaN(1,N); % The horizontal position (Norm) error between estimated pos and true pos
@@ -177,7 +178,7 @@ for i = 1:p.inval:N
             end
         case 2 % DGNSS
             if ~isempty(p.eph_b) && ~isempty(p.obs_b)
-                [cpt,n] = diff_corr_compute(p,cpt,obs.tr_sow(i));
+                [cpt,n] = diff_corr_compute(p,cpt,obs.tr_posix(i));
                 if ~isempty(n) && sum(cpt.num_sv)>=p.min_sv
                     cpt = cpt_clear(cpt); % Clear the data where don't have diff correction
                     cpt.corr_range = cpt.corr_range - cpt.diff_corr;

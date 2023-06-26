@@ -96,11 +96,11 @@ for i = 1:len
             cpt.prn_record(ind_prn(i)) = 0;
             cpt.svprn_mark(ind_prn(i)) = 0;
         end
-    elseif ~isempty(p.vtec_dict) && p.enable_vtec
+    elseif p.post_mode == 1 && ~isempty(p.vtec_dict) && p.enable_vtec
         % Computing Iono delay using SSR VTEC
         [cpt.iono_delay(i)] = ssrVtecComputation(p,p.vtec_dict,re_pos,cpt.elev(i),cpt.az(i),user_gpst,rovert_posix,freq);
         %iono_delay(i) = ustec_iono_delay_computation(p,p.USTEC,cpt.elev(i),cpt.az(i),user_gpst,freq);
-    elseif ~isempty(p.USTEC) && ~p.enable_vtec
+    elseif p.post_mode == 1 && ~isempty(p.USTEC) && ~p.enable_vtec
         % Computing Iono delay
         [cpt.iono_delay(i)] = ustec_iono_delay_computation(p,p.USTEC,cpt.elev(i),cpt.az(i),user_gpst,freq);
     else

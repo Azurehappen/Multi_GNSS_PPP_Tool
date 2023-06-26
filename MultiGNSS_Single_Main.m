@@ -16,7 +16,7 @@ addpath('pos')
 addpath('corr')
 %--------------------------------%
 % Pick the Data Number
-data_num = 1;
+data_num = 2;
 files = dataPathLoader(data_num);
 %--------------------------------%
 
@@ -25,21 +25,22 @@ if exist(files.preload,'file')==2 % Check if the data already been parsed
     load(files.preload);
 else
     [p, eph, obs] = initialParameters(files);
+    p.post_mode  = 2; %%%% 0=Standard GNSS, 1 = PPP, 2= DGNSS
     %--------------------------------%
     [p, obs] = loadDataAndCorr(p, files, eph, obs);
     save(files.preload, 'p', 'eph', 'obs');
 end
 %-------------%
 p.run_mode = 0;
-p.post_mode  = 1; %%%% 0=Standard GNSS, 1 = PPP, 2= DGNSS
+p.post_mode  = 0; %%%% 0=Standard GNSS, 1 = PPP, 2= DGNSS
 p.IGS_enable = 1;
 p.VRS_mode = 0;
 p.double_diff = 0;
 p.elev_mark  = 15*pi/180;
 p.enableGPS  = 1; % Enable GPS: 1 means enable, 0 means close
 p.enableGLO  = 0; % Enable GLO: 1 means enable, 0 means close
-p.enableGAL  = 0; % Enable GAL: 1 means enable, 0 means close
-p.enableBDS  = 0; % Enable BDS: 1 means enable, 0 means close
+p.enableGAL  = 1; % Enable GAL: 1 means enable, 0 means close
+p.enableBDS  = 1; % Enable BDS: 1 means enable, 0 means close
 p.inval = 1; % Computation time interval
 p.tec_tmax = 15;
 p.tec_tmin = 0;

@@ -58,8 +58,8 @@ end
 switch sys_type
     case 'gps'
         sysp = p.gps;
-        code_bias = p.code_bia.GPS.bia_C1C;
         if p.post_mode == 1 && p.IGS_enable == 1
+            code_bias = p.code_bia.GPS.bia_C1C;
             if isnan(code_bias(prn))
                 return;
             end
@@ -69,8 +69,8 @@ switch sys_type
         end
     case 'gal'
         sysp = p.gal;
-        code_bias = p.code_bia.GAL.bia_C1C;
         if p.post_mode == 1 && p.IGS_enable == 1
+            code_bias = p.code_bia.GAL.bia_C1C;
             if isnan(code_bias(prn))
                 return;
             end
@@ -87,9 +87,9 @@ switch sys_type
         %         end
     case 'bds'
         sysp = p.bds;
-        code_bias = p.code_bia.BDS.bia_C2I;
         % Currently RINEX 3.03 only provide info for B1, no B2a
         if p.post_mode == 1 && p.IGS_enable == 1
+            code_bias = p.code_bia.BDS.bia_C2I;
             if isnan(code_bias(prn))
                 return;
             end
