@@ -14,6 +14,7 @@ addpath('time_compute')
 addpath('eph')
 addpath('pos')
 addpath('corr')
+addpath('init')
 %--------------------------------%
 % Pick the Data Number
 data_num = 2;
@@ -84,7 +85,17 @@ title('Local bias')
 xlabel('Receiver time using GPS second');
 ylabel('Clock bias, seconds');grid on
 
+figure
+scatter(p.t,output.isb_gal,'.')
+title('ISB GAL')
+xlabel('Receiver time using GPS second');
+ylabel('GPS-GAL ISB, meter');grid on
 
+figure
+scatter(p.t,output.isb_bds,'.')
+title('ISB BDS')
+xlabel('Receiver time using GPS second');
+ylabel('GPS-BDS ISB, meter');grid on
 % figure
 % subplot(311)
 % scatter(p.t,output.ned_err(1,:),'.')

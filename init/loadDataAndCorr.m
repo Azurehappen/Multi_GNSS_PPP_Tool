@@ -80,33 +80,9 @@ if p.L2enable == 1 && p.bia_type == 1
 end
 p.eph_b = eph; p.obs_b = [];
 % Base station data
-if p.post_mode==2 && ~isempty(data_base)
-    %     matname = [data_base '_nav.mat'];
-    %     navname = [data_base '.nav'];
-    obsname = [data_base '.obs'];
-    %     if exist(matname,'file')==2 % Check if the data already been parsed
-    %         load(matname);
-    %         p.eph_b = eph_b;
-    %     else
-    %         % Get ephemeris data (.nav file, RINEX verion 3.03)
-    %         if exist(matname,'file')==2
-    %             eph_b = parser_eph(p,navname);
-    %             save ([data_base,'_nav.mat'], 'eph_b');
-    %             p.eph_b = eph_b;
-    %         else
-    %             p.eph_b = eph;
-    %         end
-    %     end
-    matname = [data_base '_obs.mat'];
-    if exist(matname,'file')==2 % Check if the data already been parsed
-        load(matname);
-        p.obs_b = obs_b;
-    else
-        % Get observables data (.obs file, RINEX verion 3.03)
-        obs_b = parser_obs(p, obsname);
-        save ([data_base,'_obs.mat'], 'obs_b');
-        p.obs_b = obs_b;
-    end
+if p.post_mode==2 && ~isempty(files.data_base)
+    % Get observables data (.obs file, RINEX verion 3.03)
+    p.obs_b = parserGnssObs(p, files.data_base);
 end
 
 

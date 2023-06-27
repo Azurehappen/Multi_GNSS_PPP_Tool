@@ -5,49 +5,7 @@ function  log = compute_gnss_ecef(p,eph,obs)
 % Output: log is a data struct that store the results.
 %----------------------------------%
 N = length(obs.tr_sow); % The number of positioning points
-% Initialize output
-log.epoch_t = datetime.empty;
-log.gpst = obs.tr_sow-obs.tr_sow(1);
-log.err = NaN(1,N); % The position (Norm) error between estimated pos and true pos
-log.hor_err = NaN(1,N); % The horizontal position (Norm) error between estimated pos and true pos
-log.ned_err_norm = NaN(1,N); % NED frame norm error
-log.ned_err = NaN(3,N); % NED frame error
-log.pos_ecef = NaN(3,N); % Estimated position in ECEF
-log.rover_clk = NaN(1,N); % Receiver clock bias (meter)
-log.sv_num_GPS = NaN(1,N); % The amount of GPS satellite be used
-log.sv_num_GLO = NaN(1,N); % The amount of GLO satellit  used
-log.sv_num_GAL = NaN(1,N); % The amount of GAL satellite be used
-log.sv_num_BDS = NaN(1,N); % The amount of BDS satellite be used
-if ~isempty(obs.gps)
-    log.num_obs_gps = size(obs.gps(1).data.P,1); % The maximum of PRN recorded in obs data
-else
-    log.num_obs_gps = 0;
-end
-if ~isempty(obs.glo)
-    log.num_obs_glo = size(obs.glo(1).data.P,1); % The maximum of PRN recorded in obs data
-else
-    log.num_obs_glo = 0;
-end
-if ~isempty(obs.gal)
-    log.num_obs_gal = size(obs.gal(1).data.P,1); % The maximum of PRN recorded in obs data
-else
-    log.num_obs_gal = 0;
-end
-if ~isempty(obs.bds)
-    log.num_obs_bds = size(obs.bds(1).data.P,1); % The maximum of PRN recorded in obs data
-else
-    log.num_obs_bds = 0;
-end
-log.res_GPS = NaN(log.num_obs_gps,N); % The residual at the end
-log.res_GLO = NaN(log.num_obs_glo,N); % The residual at the end
-log.res_GAL = NaN(log.num_obs_gal,N); % The residual at the end
-log.res_BDS = NaN(log.num_obs_bds,N); % The residual at the end
-log.elev_GPS = NaN(log.num_obs_gps,N); % The elevation of satellites
-log.elev_GLO = NaN(log.num_obs_glo,N);
-log.elev_GAL = NaN(log.num_obs_gal,N);
-log.elev_BDS = NaN(log.num_obs_bds,N);
-log.res = [log.res_GPS;log.res_GAL;log.res_GLO;log.res_BDS];
-log.elev = [log.elev_GPS;log.elev_GAL;log.elev_GLO;log.elev_BDS];
+log = initOutputLog(obs);
 % Mark the sat prn that be computed
 gpslog.svprn_mark = zeros(log.num_obs_gps,1);glolog.svprn_mark = zeros(log.num_obs_glo,1);
 gallog.svprn_mark = zeros(log.num_obs_gal,1);bdslog.svprn_mark = zeros(log.num_obs_bds,1);
@@ -125,8 +83,8 @@ for i = 1:p.inval:N
     % trop delay and iono delay
     cpt.trop_delay = NaN(length(cpt.corr_range),1); cpt.iono_delay = NaN(length(cpt.corr_range),1);
     if isempty(log.epoch_t) || obs.datetime(i) - log.epoch_t(end) > seconds(1.5)
-        [re_pos,clock_bias,~] = userpos(p,cpt);
-        p.state0 = [re_pos;clock_bias];
+        [estState,~] = userpos(p,cpt);
+        p.state0 = [estState.pos;estState.clock_bias];
         if p.post_mode == 1
             p.mk = 1;
         end
@@ -150,8 +108,8 @@ for i = 1:p.inval:N
             cpt.IoFac = zeros(length(cpt.corr_range),1);
             cpt = trop_iono_compute(p,eph,cpt,obs,p.state0(1:3),tdoy,[],rt);
             cpt.corr_range = cpt.corr_range - cpt.trop_delay - cpt.iono_delay;
-            [re_pos,clock_bias,res] = userpos(p,cpt);
-            [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos,obs.datetime(i));
+            [estState,res] = userpos(p,cpt);
+            [log,p.state0] = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
             %                     end
         case 1 % PPP
             tdoy = doy(obs.tr_prime(1:3,i)); % Day of year
@@ -166,12 +124,12 @@ for i = 1:p.inval:N
                 %%-------------%%
                 % Compute the final position
                 if p.double_diff == 0
-                    [re_pos,clock_bias,res] = userpos(p,cpt);
+                    [estState,res] = userpos(p,cpt);
                 else
                     [re_pos,clock_bias,res] = userpos_2diff(p,cpt);
                 end
-                if ~isempty(re_pos)
-                    [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos,obs.datetime(i));
+                if ~isempty(estState.pos)
+                    [log,p.state0] = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
                 end
             end
         case 2 % DGNSS
@@ -182,26 +140,13 @@ for i = 1:p.inval:N
                     cpt.corr_range = cpt.corr_range - cpt.diff_corr;
                     % [re_pos,clock_bias,res] = userpos(p,cpt.sat_pos_Rcorr,...
                     % cpt.corr_range,cpt.num_sv);
-                    [re_pos,clock_bias,res] = userpos(p,cpt);
-                    if ~isempty(re_pos)
-                        [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos,obs.datetime(i));
+                    [estState,res] = userpos(p,cpt);
+                    if ~isempty(estState.pos)
+                        [log,p.state0] = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
                     end
                 end
             else
                 warning('No differential source given')
-            end
-
-        case 3 % VRS
-            tdoy = doy(obs.tr_prime(1:3,i)); % Day of year
-            [rt.week, rt.dow, rt.sow] = date2gnsst(obs.tr_prime(:,i)');
-            rt.sow = round(rt.sow);
-            cpt = vrs_corr_compute(p,cpt,eph,tdoy,rt);
-            if length(cpt.corr_range)>=p.min_sv
-                cpt.corr_range = cpt.corr_range - cpt.diff_corr;
-                [re_pos,clock_bias,res] = userpos(p,cpt);
-                if ~isempty(re_pos)
-                    [log,p.state0] = save_result(p,cpt,log,i,re_pos,clock_bias,res,grdpos,obs.datetime(i));
-                end
             end
         otherwise
             warning('Unsupport positioning option');

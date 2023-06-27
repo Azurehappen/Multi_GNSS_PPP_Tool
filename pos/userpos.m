@@ -1,4 +1,4 @@
-function [pos,clock_bias,res] = userpos(p,cpt)
+function [estState,res] = userpos(p,cpt)
 % This is solver for computing user position, receiver clock
 % bias, satellite system offset.
 % Measurement selection applied
@@ -15,12 +15,23 @@ function [pos,clock_bias,res] = userpos(p,cpt)
 
 %-------------------%
 % Initialize
+estState.isb_dict = dictionary;
+estState.isb_dict(p.glo.sys_num) = NaN;
+estState.isb_dict(p.gal.sys_num) = NaN;
+estState.isb_dict(p.bds.sys_num) = NaN;
 
 x0 = p.state0;
-[H_offset,x_offset] = sys_offset(cpt.num_sv);
-xk = [x0;x_offset];
+[H_isb,x_isb] = formIsbStatesAndH(cpt.num_sv);
+xk = [x0;x_isb];
 %------------------%
-[pos,clock_bias,res] = LSsolver(p,xk,H_offset,cpt);
+[estState.pos,estState.clock_bias,isb_est,res] = LSsolver(p,xk,H_isb,cpt);
+j = 1;
+for i = 2:length(cpt.num_sv)
+    if cpt.num_sv(i) ~= 0
+        estState.isb_dict(i) = isb_est(j);
+        j = j+1;
+    end
+end
 % switch p.select
 %     case 0
 %         [pos,clock_bias,res] = LSsolver(p,xk,H_offset,s_pos_ecef,y);

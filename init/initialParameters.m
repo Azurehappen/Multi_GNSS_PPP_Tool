@@ -110,7 +110,7 @@ p.gps.message_duration = 7200; % Maximum time difference between obs data and ep
 p.glo.sys_num = 2;
 p.glo.mu = 3.986004418e+14; % Geocentric gravitational constant (m^3/s^2)
 p.glo.OmegaDot_e = 7.2921151467e-5; % Earth's rotation rate
-p.glo.F = -2*sqrt(p.gal.mu)/(p.c^2); % 
+p.glo.F = -2*sqrt(p.glo.mu)/(p.c^2); % 
 p.glo.a_e = 6378136; %  semi-major (equatorial) axis of the PZ-90 Earth’s ellipsoid
 p.glo.C_20 = 1082625.75e-9; %  second degree zonal coefficient of normal potential
 p.glo.message_duration = 1800; %54000;
@@ -128,7 +128,7 @@ p.gal.message_duration = 7200;
 p.bds.sys_num = 4;
 p.bds.mu = 3.986004418e+14; % Geocentric gravitational constant (m^3/s^2)
 p.bds.OmegaDot_e = 7.2921150e-5; % Earth's rotation rate
-p.bds.F = -2*sqrt(p.gal.mu)/(p.c^2); % BeiDou-ICD page 58
+p.bds.F = -2*sqrt(p.bds.mu)/(p.c^2); % BeiDou-ICD page 58
 p.bds.message_duration = 3600;
 % Measurement selection
 p.select = 0;
