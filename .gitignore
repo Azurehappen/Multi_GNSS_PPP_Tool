@@ -1,0 +1,10 @@
+*.DS_Store
+*.m~
+*.manifest
+*.arc
+*.aux
+*.bbl
+*.blg
+*.log
+*.acr
+*.asv
