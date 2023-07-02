@@ -89,8 +89,10 @@ cpt.s_v_ecef(:,del_ind) = [];
 cpt.tp(del_ind) = [];
 cpt.elev(del_ind) = [];
 cpt.az(del_ind) = [];
-cpt.sat_pos_Rcorr(:,del_ind) = [];
-cpt.sat_posprc_Rcorr(:,del_ind) = [];
-cpt.sat_v_Rcorr(:,del_ind) = [];
+if isfield(cpt, 'sat_pos_Rcorr')
+    cpt.sat_pos_Rcorr(:,del_ind) = [];
+    cpt.sat_posprc_Rcorr(:,del_ind) = [];
+    cpt.sat_v_Rcorr(:,del_ind) = [];
+end
 cpt.diff_corr = diff_corr;
 end

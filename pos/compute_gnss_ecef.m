@@ -82,22 +82,41 @@ for i = 1:p.inval:N
     cpt.elev = NaN(length(cpt.corr_range),1); cpt.az = NaN(length(cpt.corr_range),1);
     % trop delay and iono delay
     cpt.trop_delay = NaN(length(cpt.corr_range),1); cpt.iono_delay = NaN(length(cpt.corr_range),1);
-    if isempty(log.epoch_t) || obs.datetime(i) - log.epoch_t(end) > seconds(1.5)
-        [estState,~] = userpos(p,cpt);
-        p.state0 = [estState.pos;estState.clock_bias];
+    if isempty(log.epoch_t) || seconds(obs.datetime(i) - log.epoch_t(end)) > 1.5
+        [estState,res] = userpos(p,cpt);
         if p.post_mode == 1
             p.mk = 1;
         end
+        if p.post_mode == p.mode_dgnss && ~isempty(p.eph_b) && ~isempty(p.obs_b)
+            [cpt,n] = diff_corr_compute(p,cpt,obs.tr_posix(i));
+            if ~isempty(n) && sum(cpt.num_sv)>=p.min_sv
+                cpt = cpt_clear(cpt); % Clear the data where don't have diff correction
+                cpt.corr_range = cpt.corr_range - cpt.diff_corr;
+                [estState,res] = userpos(p,cpt);
+            end
+        end
+        if ~isempty(estState.pos)
+            % Save the initial state but not the first epoch.
+            [p.state0, p.state_cov] = obtainInitEkfStateAndCov(p, estState);
+            log.epoch_t = [log.epoch_t, obs.datetime(i)];
+            %log = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
+        end
+        continue;
+    else
+        dt = seconds(obs.datetime(i) - log.epoch_t(end));
+        % EKF predict
+        [p.state0, p.state_cov] = ekfPredict(p, p.state0, p.state_cov, dt);
     end
     % Rotate the sat pos to common reference frame
-    cpt = earth_rotation_corr(p,cpt,p.state0(4)/p.c);
+    [estState,~] = userpos(p,cpt);
+    cpt = earth_rotation_corr(p,cpt,estState.clock_bias/p.c);
     % Check elevation
     cpt = elevaz_check(p,cpt,p.state0(1:3));
     if sum(cpt.num_sv) < p.min_sv
         continue;
     end
     switch p.post_mode
-        case 0 % Standard GNSS
+        case p.mode_sps % Standard GNSS
             % if p.elev_mark ==0
             % log = save_result(p,cpt,log,i,re_pos,clock_bias,res);
             % else
@@ -109,9 +128,9 @@ for i = 1:p.inval:N
             cpt = trop_iono_compute(p,eph,cpt,obs,p.state0(1:3),tdoy,[],rt);
             cpt.corr_range = cpt.corr_range - cpt.trop_delay - cpt.iono_delay;
             [estState,res] = userpos(p,cpt);
-            [log,p.state0] = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
+            log = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
             %                     end
-        case 1 % PPP
+        case p.mode_ppp % PPP
             tdoy = doy(obs.tr_prime(1:3,i)); % Day of year
             [rt.week, rt.dow, rt.sow] = date2gnsst(obs.tr_prime(:,i)');
             %%-------------%%
@@ -129,20 +148,19 @@ for i = 1:p.inval:N
                     [re_pos,clock_bias,res] = userpos_2diff(p,cpt);
                 end
                 if ~isempty(estState.pos)
-                    [log,p.state0] = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
+                    log = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
                 end
             end
-        case 2 % DGNSS
+        case p.mode_dgnss % DGNSS
             if ~isempty(p.eph_b) && ~isempty(p.obs_b)
                 [cpt,n] = diff_corr_compute(p,cpt,obs.tr_posix(i));
                 if ~isempty(n) && sum(cpt.num_sv)>=p.min_sv
                     cpt = cpt_clear(cpt); % Clear the data where don't have diff correction
                     cpt.corr_range = cpt.corr_range - cpt.diff_corr;
-                    % [re_pos,clock_bias,res] = userpos(p,cpt.sat_pos_Rcorr,...
-                    % cpt.corr_range,cpt.num_sv);
-                    [estState,res] = userpos(p,cpt);
+                    [estState,res] = ekfUpdate(p,cpt,dt);
+                    %[estState,res] = userpos(p,cpt);
                     if ~isempty(estState.pos)
-                        [log,p.state0] = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
+                        log = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
                     end
                 end
             else

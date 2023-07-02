@@ -1,5 +1,9 @@
 function [p, eph, obs] = initialParameters(files)
 %-------------------------------------------------------------------------%
+p.mode_sps = 0;
+p.mode_ppp = 1;
+p.mode_dgnss = 2;
+
 %Define the constant parameters for GNSS system
 %-------------------------------------------------------------------------%
 p.gps.max_prn = 33; % The max number of GPS satellites
@@ -138,5 +142,13 @@ p.GPS_C1C = 1;p.GPS_C1W = 2;p.GPS_C2L = 3;p.GPS_C2W = 4;
 p.GLO_C1C = 1;p.GLO_C1P = 2;p.GLO_C2C = 3;p.GLO_C2P = 4;
 p.GAL_C1X = 1;p.GAL_C7X = 2;
 p.BDS_C2I = 1;p.BDS_C7I = 2;
+
+%---------------------------------------%
+% EKF parameters
+p.ekf_para.q_pos = 30;
+p.ekf_para.q_vel = 0;
+p.ekf_para.q_acc = 1.0;
+p.ekf_para.q_clkDrift = 1.0;
+p.ekf_para.q_isb = 1.0;
 
 end

@@ -20,7 +20,7 @@ estState.isb_dict(p.glo.sys_num) = NaN;
 estState.isb_dict(p.gal.sys_num) = NaN;
 estState.isb_dict(p.bds.sys_num) = NaN;
 
-x0 = p.state0;
+x0 = p.state0(1:4);
 [H_isb,x_isb] = formIsbStatesAndH(cpt.num_sv);
 xk = [x0;x_isb];
 %------------------%

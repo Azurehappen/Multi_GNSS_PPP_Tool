@@ -1,8 +1,7 @@
-function [log,state] = save_result(p,cpt,log,i,estState,res,grdpos,epoch_t)
+function log = save_result(p,cpt,log,i,estState,res,grdpos,epoch_t)
 
 log.epoch_t = [log.epoch_t, epoch_t];
 log.pos_ecef(:,i) = estState.pos;
-state = [estState.pos;estState.clock_bias];
 %------------------------%
 [pos_llh,~,~]=ecef2llh_iter(estState.pos);
 R_e2g=ll2R(pos_llh); % rotation matrix from ecef 2 geodetic frame

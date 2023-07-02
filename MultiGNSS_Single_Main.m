@@ -15,6 +15,7 @@ addpath('eph')
 addpath('pos')
 addpath('corr')
 addpath('init')
+addpath('ekf')
 %--------------------------------%
 % Pick the Data Number
 data_num = 2;
@@ -33,7 +34,7 @@ else
 end
 %-------------%
 p.run_mode = 0;
-p.post_mode  = 0; %%%% 0=Standard GNSS, 1 = PPP, 2= DGNSS
+p.post_mode  = p.mode_dgnss; %%%% sps=Standard GNSS, ppp = PPP, dgnss = DGNSS
 p.IGS_enable = 1;
 p.VRS_mode = 0;
 p.double_diff = 0;
