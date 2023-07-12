@@ -19,7 +19,7 @@ if (p.post_mode==1 || p.post_mode==3)% If PPP, parse the iono correction
     end
 end
 
-if p.L2enable == 1 && p.bia_type == 1
+if p.L2enable == true && p.bia_type == 1
     if p.enableGPS == 1
         Factor = p.L2freq^2/(p.L1freq^2-p.L2freq^2);
         [n,r] = size(obs.gps(1).data.P);
@@ -80,7 +80,7 @@ if p.L2enable == 1 && p.bia_type == 1
 end
 p.eph_b = eph; p.obs_b = [];
 % Base station data
-if p.post_mode==2 && ~isempty(files.data_base)
+if p.post_mode==p.mode_dgnss && ~isempty(files.data_base)
     % Get observables data (.obs file, RINEX verion 3.03)
     p.obs_b = parserGnssObs(p, files.data_base);
 end

@@ -1,4 +1,4 @@
-function [estState,res] = ekfUpdate(p, cpt, dt)
+function [estState,res] = stateUpdate(p, cpt, dt)
 
 %-------------------%
 % Initialize
@@ -18,7 +18,7 @@ H = zeros(num,5);
 Range = zeros(num,1);
 r = zeros(num,1);
 off = zeros(num,1);
-if p.post_mode == 1
+if p.post_mode == p.mode_ppp
     if p.IGS_enable == 1
         s_pos_ecef = cpt.s_pos_prc;
     else
@@ -44,15 +44,23 @@ H_os = [H,H_isb];
 R = constructMeasNoise(p.c, cpt.elev, dt);
 % measurement residual
 res = y - r - x_minus(4)-off;
-% Innovation (or residual) covariance
-S = H_os * p.state_cov * H_os' + R;
-% Near-optimal Kalman Gain
-Kk = p.state_cov * H_os' * S^(-1);
-delta_x = Kk * res;
-x_plus = x_minus + delta_x;
-I = eye(size(p.state_cov));
-cov_plus = (I - Kk*H_os)*p.state_cov*(I - Kk*H_os)' + Kk*R*Kk';
-
+% y - f(x0) = H (x - x0);
+zk = res + H_os * x_minus;
+%[x_plus1, cov_plus1] = ekfUpdate(x_minus, p.state_cov, res, H_os, R);
+%[x_plus, cov_plus] = mapUpdate(ones(length(y),1), x_minus, p.state_cov, res, H_os, R);
+%____________%
+lla = ecef2lla(x_minus(1:3)', 'WGS84');
+spec_ecef = specInEnuToEcef(lla, diag([0.15; 0.15; 1.6]));
+clk_spec = (500^2)*0.05;
+dclk_spec = (50^2)*0.05;
+isb_spec = (10^2)*0.05;
+%p_clc = diag([clk_spec,isb_spec*ones(1,length(x_minus)-4)]);
+%p_u = [spec_ecef; zeros(3, length(x_minus)-3);
+%       zeros(length(x_minus)-3, 3), p_clc];
+p_u = diag([diag(spec_ecef);clk_spec;dclk_spec;isb_spec*ones(length(x_minus)-5, 1)]);
+J_l = p_u^(-1);
+[x_plus,cov_plus,b,augcost,J_out,exitflag] = mapRiskAverse(zk,H_os,p.state_cov,R,J_l,x_minus);
+%____________%
 p.state0 = x_plus;
 p.state_cov = cov_plus;
 

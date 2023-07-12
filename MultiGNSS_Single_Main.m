@@ -15,7 +15,7 @@ addpath('eph')
 addpath('pos')
 addpath('corr')
 addpath('init')
-addpath('ekf')
+addpath('estimation')
 %--------------------------------%
 % Pick the Data Number
 data_num = 2;
@@ -26,13 +26,14 @@ files = dataPathLoader(data_num);
 if exist(files.preload,'file')==2 % Check if the data already been parsed
     load(files.preload);
 else
-    [p, eph, obs] = initialParameters(files);
-    p.post_mode  = 2; %%%% 0=Standard GNSS, 1 = PPP, 2= DGNSS
+    [p, eph, obs] = readDataFiles(files);
+    p.post_mode  = p.mode_dgnss; %%%% 0=Standard GNSS, 1 = PPP, 2= DGNSS
     %--------------------------------%
     [p, obs] = loadDataAndCorr(p, files, eph, obs);
     save(files.preload, 'p', 'eph', 'obs');
 end
 %-------------%
+p = initialParameters(p, files, eph);
 p.run_mode = 0;
 p.post_mode  = p.mode_dgnss; %%%% sps=Standard GNSS, ppp = PPP, dgnss = DGNSS
 p.IGS_enable = 1;

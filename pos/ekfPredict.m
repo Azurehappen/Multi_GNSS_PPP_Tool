@@ -1,7 +1,10 @@
 function [prior_state, prior_cov] = ekfPredict(p, state, cov, dt)
 
-phi = eye(length(state), length(state));
-phi(4, 5) = dt;
+% x = [x,y,z,clk,clk_drift,isb..]
+phi = diag([ones(1, 5), ...
+    exp(p.ekf_para.u_isb * dt) * ones(1, length(state) - 5)]);
+phi(4, 5) = dt; % clk(k) = clk(k-1) + clk_drift * dt
+
 Qc = p.ekf_para.q_clkDrift * [dt^3 / 3, dt^2 / 2;
                    dt^2 / 2, dt];
 Qp = p.ekf_para.q_pos * eye(3,3);

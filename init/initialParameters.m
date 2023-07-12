@@ -1,22 +1,4 @@
-function [p, eph, obs] = initialParameters(files)
-%-------------------------------------------------------------------------%
-p.mode_sps = 0;
-p.mode_ppp = 1;
-p.mode_dgnss = 2;
-
-%Define the constant parameters for GNSS system
-%-------------------------------------------------------------------------%
-p.gps.max_prn = 33; % The max number of GPS satellites
-p.gal.max_prn = 38; % The max number of GAL satellites
-p.glo.max_prn = 34; % The max number of GLO satellites
-p.bds.max_prn = 65; % The max number of BDS satellites
-
-% Get ephemeris data (.nav file, RINEX verion 3.03)
-eph = parserGnssEph(p, files.eph);
-% Get observables data (.obs file, RINEX verion 3.03)
-obs = parserGnssObs(p, files.obs);
-p.t = datetime(obs.tr_prime');
-
+function [p, eph, obs] = initialParameters(p, files, eph)
 %----------------------%
 % load('data/DCB_GLO.mat');
 % p.icb_glo = DCB_P1C1;
@@ -36,7 +18,7 @@ p.enableGLO = 0; % Enable GLO: 1 means enable, 0 means close
 p.enableGAL = 1; % Enable GAL: 1 means enable, 0 means close
 p.enableBDS = 1; % Enable BDS: 1 means enable, 0 means close
 p.IGS_enable = 1; % Enable IGS correction: 1 means enable, 0 means close
-p.L2enable = 1;
+
 p.L1freq = 1575.42e6; % L1 frequency (Hz)
 p.L2freq = 1227.6e6; % L2 frequency (Hz)
 p.L1glo = 1602.0e6; % GLO L1 frequency (Hz)
@@ -149,6 +131,16 @@ p.ekf_para.q_pos = 30;
 p.ekf_para.q_vel = 0;
 p.ekf_para.q_acc = 1.0;
 p.ekf_para.q_clkDrift = 1.0;
-p.ekf_para.q_isb = 1.0;
+
+% ISB model:
+% continuous time: dx(t) = u x(t) + w (See 4.6.5 in Farrell's book)
+% dP(t) = 2 u P(t) + Q
+% ISB is a constant, therefore, dP(t) = 0.
+% Discrete time:
+% x(k+1) = Phi * x(k)
+% P(k+1) = Phi * P(k) * Phi' + Q
+p.ekf_para.isb_cov = 1;
+p.ekf_para.u_isb = -1e-4;
+p.ekf_para.q_isb = -2 * p.ekf_para.u_isb * p.ekf_para.isb_cov;
 
 end
