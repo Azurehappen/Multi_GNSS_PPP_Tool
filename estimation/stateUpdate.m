@@ -1,4 +1,4 @@
-function [estState,res] = stateUpdate(p, cpt, dt)
+function [p,estState,res] = stateUpdate(p, cpt, dt)
 
 %-------------------%
 % Initialize
@@ -46,21 +46,25 @@ R = constructMeasNoise(p.c, cpt.elev, dt);
 res = y - r - x_minus(4)-off;
 % y - f(x0) = H (x - x0);
 zk = res + H_os * x_minus;
-%[x_plus1, cov_plus1] = ekfUpdate(x_minus, p.state_cov, res, H_os, R);
-%[x_plus, cov_plus] = mapUpdate(ones(length(y),1), x_minus, p.state_cov, res, H_os, R);
-%____________%
-lla = ecef2lla(x_minus(1:3)', 'WGS84');
-spec_ecef = specInEnuToEcef(lla, diag([0.15; 0.15; 1.6]));
-clk_spec = (500^2)*0.05;
-dclk_spec = (50^2)*0.05;
-isb_spec = (10^2)*0.05;
-%p_clc = diag([clk_spec,isb_spec*ones(1,length(x_minus)-4)]);
-%p_u = [spec_ecef; zeros(3, length(x_minus)-3);
-%       zeros(length(x_minus)-3, 3), p_clc];
-p_u = diag([diag(spec_ecef);clk_spec;dclk_spec;isb_spec*ones(length(x_minus)-5, 1)]);
-J_l = p_u^(-1);
-[x_plus,cov_plus,b,augcost,J_out,exitflag] = mapRiskAverse(zk,H_os,p.state_cov,R,J_l,x_minus);
-%____________%
+switch p.est_mode
+    case p.ekf_est
+        [x_plus, cov_plus] = ekfUpdate(x_minus, p.state_cov, res, H_os, R);
+    case p.map_est
+        [x_plus, cov_plus] = mapUpdate(ones(length(y),1), x_minus, p.state_cov, res, H_os, R);
+    case p.raps_est   
+        lla = ecef2lla(x_minus(1:3)', 'WGS84');
+        spec_ecef = specInEnuToEcef(lla, diag([0.15; 0.15; 1.6]));
+        clk_spec = (500^2)*0.05;
+        dclk_spec = (50^2)*0.05;
+        isb_spec = (10^2)*0.05;
+        p_u = diag([diag(spec_ecef);clk_spec;dclk_spec;isb_spec*ones(length(x_minus)-5, 1)]);
+        J_l = p_u^(-1);
+        [x_plus,cov_plus,b,augcost,J_out,exitflag,num_iter,comp_t] = ...
+            mapRiskAverse(zk,H_os,p.state_cov,R,J_l,x_minus);
+    otherwise
+        error('Incorrect state estimation mode configuration');
+end
+
 p.state0 = x_plus;
 p.state_cov = cov_plus;
 

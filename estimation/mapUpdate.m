@@ -12,8 +12,8 @@ if isempty(by)
     error('Input arg "by" is empty.');
 else
     Phiby = diag(by);
-    A = [E_R' * Phiby * H; E_P'];             
-    c = [E_R' * Phiby * y; zeros(length(x_prior),1)];   
+    A = [E_R * Phiby * H; E_P];             
+    c = [E_R * Phiby * y; zeros(length(x_prior),1)];   
     dx = (A'*A)^-1*A'*c; % LeastSquares % posterior state estimate
     aug_cost = norm(A*dx-c)^2;          
 end

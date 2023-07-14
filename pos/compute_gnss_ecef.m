@@ -5,7 +5,7 @@ function  log = compute_gnss_ecef(p,eph,obs)
 % Output: log is a data struct that store the results.
 %----------------------------------%
 N = length(obs.tr_sow); % The number of positioning points
-log = initOutputLog(obs);
+log = initOutputLog(p, obs);
 % Mark the sat prn that be computed
 gpslog.svprn_mark = zeros(log.num_obs_gps,1);glolog.svprn_mark = zeros(log.num_obs_glo,1);
 gallog.svprn_mark = zeros(log.num_obs_gal,1);bdslog.svprn_mark = zeros(log.num_obs_bds,1);
@@ -144,7 +144,7 @@ for i = 1:p.inval:N
                 % Compute the final position
                 if p.double_diff == 0
                     %[estState,res] = userpos(p,cpt);
-                    [estState,res] = stateUpdate(p,cpt,dt);
+                    [p,estState,res] = stateUpdate(p,cpt,dt);
                 else
                     [re_pos,clock_bias,res] = userpos_2diff(p,cpt);
                 end
@@ -158,7 +158,7 @@ for i = 1:p.inval:N
                 if ~isempty(n) && sum(cpt.num_sv)>=p.min_sv
                     cpt = cpt_clear(cpt); % Clear the data where don't have diff correction
                     cpt.corr_range = cpt.corr_range - cpt.diff_corr;
-                    [estState,res] = stateUpdate(p,cpt,dt);
+                    [p,estState,res] = stateUpdate(p,cpt,dt);
                     %[estState,res] = userpos(p,cpt);
                     if ~isempty(estState.pos)
                         log = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));

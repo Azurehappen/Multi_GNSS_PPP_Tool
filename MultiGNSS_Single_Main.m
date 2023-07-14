@@ -39,7 +39,7 @@ p.post_mode  = p.mode_dgnss; %%%% sps=Standard GNSS, ppp = PPP, dgnss = DGNSS
 p.IGS_enable = 1;
 p.VRS_mode = 0;
 p.double_diff = 0;
-p.elev_mark  = 15*pi/180;
+p.elev_mark  = 10*pi/180;
 p.enableGPS  = 1; % Enable GPS: 1 means enable, 0 means close
 p.enableGLO  = 0; % Enable GLO: 1 means enable, 0 means close
 p.enableGAL  = 1; % Enable GAL: 1 means enable, 0 means close
@@ -49,6 +49,7 @@ p.tec_tmax = 15;
 p.tec_tmin = 0;
 p.L2enable = 0;
 p.enable_vtec = false;
+p.est_mode = p.raps_est;
 
 output = compute_gnss_ecef(p,eph,obs);
 
@@ -98,6 +99,15 @@ scatter(p.t,output.isb_bds,'.')
 title('ISB BDS')
 xlabel('Receiver time using GPS second');
 ylabel('GPS-BDS ISB, meter');grid on
+
+figure
+scatter(p.t,output.state_cov(6,:),'.')
+title('State covariance')
+xlabel('Receiver time using GPS second');
+ylabel('meter^2');grid on
+
+percentage = (sum(output.hor_err < 1.0) / length(output.hor_err)) * 100
+percentage = (sum(output.hor_err < 1.5) / length(output.hor_err)) * 100
 % figure
 % subplot(311)
 % scatter(p.t,output.ned_err(1,:),'.')

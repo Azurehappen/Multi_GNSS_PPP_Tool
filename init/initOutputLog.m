@@ -1,4 +1,4 @@
-function log = initOutputLog(obs)
+function log = initOutputLog(p, obs)
 
 N = length(obs.tr_sow); % The number of positioning points
 % Initialize output
@@ -17,6 +17,9 @@ log.sv_num_BDS = NaN(1,N); % The amount of BDS satellite be used
 log.isb_glo = NaN(1,N);
 log.isb_gal = NaN(1,N);
 log.isb_bds = NaN(1,N);
+
+numOfState = 5; % x,y,z,clk,clk_drift
+log.state_cov = NaN(numOfState+p.enableGLO+p.enableGAL+p.enableBDS, N);
 if ~isempty(obs.gps)
     log.num_obs_gps = size(obs.gps(1).data.P,1); % The maximum of PRN recorded in obs data
 else

@@ -127,10 +127,10 @@ p.BDS_C2I = 1;p.BDS_C7I = 2;
 
 %---------------------------------------%
 % EKF parameters
-p.ekf_para.q_pos = 30;
+p.ekf_para.q_pos = 30^2;
 p.ekf_para.q_vel = 0;
-p.ekf_para.q_acc = 1.0;
-p.ekf_para.q_clkDrift = 1.0;
+p.ekf_para.q_acc = 1.0^2;
+p.ekf_para.q_clkDrift = 1.0^2;
 
 % ISB model:
 % continuous time: dx(t) = u x(t) + w (See 4.6.5 in Farrell's book)
@@ -142,5 +142,13 @@ p.ekf_para.q_clkDrift = 1.0;
 p.ekf_para.isb_cov = 1;
 p.ekf_para.u_isb = -1e-4;
 p.ekf_para.q_isb = -2 * p.ekf_para.u_isb * p.ekf_para.isb_cov;
+%p.ekf_para.q_isb = 5^2;
+
+%---------------------------------------%
+% estimation mode
+p.ekf_est = 1;
+p.map_est = 2;
+p.raps_est = 3;
+p.est_mode = p.ekf_est;
 
 end

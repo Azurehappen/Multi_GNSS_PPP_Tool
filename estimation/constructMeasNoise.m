@@ -10,6 +10,7 @@ sigma_a = 300*0.003;
 sigma_b = 300*0.003;
 d = speed_of_light * 5e-12 * dt;
 for i = 1:length(elev_rad)
+    % R(i,i) = 2 * (sigma_a^2 + sigma_b^2) + d^2;
     R(i,i) = 2 * (sigma_a^2 + sigma_b^2 / (sin(elev_rad(i)))^2 ) + d^2;
 end
 

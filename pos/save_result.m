@@ -33,4 +33,5 @@ log.elev_BDS(:,i) = log.elev(start:endi,i);
 log.isb_glo(i) = estState.isb_dict(p.glo.sys_num);
 log.isb_gal(i) = estState.isb_dict(p.gal.sys_num);
 log.isb_bds(i) = estState.isb_dict(p.bds.sys_num);
+log.state_cov(:,i) = diag(p.state_cov)';
 end
