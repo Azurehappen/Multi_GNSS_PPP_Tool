@@ -53,14 +53,19 @@ switch p.est_mode
         [x_plus, cov_plus] = mapUpdate(ones(length(y),1), x_minus, p.state_cov, res, H_os, R);
     case p.raps_est   
         lla = ecef2lla(x_minus(1:3)', 'WGS84');
-        spec_ecef = specInEnuToEcef(lla, diag([0.15; 0.15; 1.6]));
-        clk_spec = (500^2)*0.05;
-        dclk_spec = (50^2)*0.05;
-        isb_spec = (10^2)*0.05;
-        p_u = diag([diag(spec_ecef);clk_spec;dclk_spec;isb_spec*ones(length(x_minus)-5, 1)]);
+        % Horizontal: alpha = 1, beta = 0.15;
+        % Vertical: alpha = 3, beta = 0.2.
+        cov_spec_ecef = specInNedToEcef(lla', diag([p.raps.hor_cov_spec; ...
+            p.raps.hor_cov_spec; p.raps.ver_cov_spec]));
+        p_clk = diag([p.raps.clk_cov_spec;p.raps.dclk_cov_spec;...
+            p.raps.isb_cov_spec*ones(length(x_minus)-5, 1)]);
+        p_u = [cov_spec_ecef, zeros(3, length(x_minus)-3);
+               zeros(length(x_minus)-3, 3), p_clk];
         J_l = p_u^(-1);
+        p.raps_spec_xyz = diag(J_l(1:3, 1:3));
         [x_plus,cov_plus,b,augcost,J_out,exitflag,num_iter,comp_t] = ...
-            mapRiskAverse(zk,H_os,p.state_cov,R,J_l,x_minus);
+            mapRiskAverse(zk,H_os,p.state_cov,R,diag(diag(J_l)),x_minus);
+        p.raps_J = J_out;
     otherwise
         error('Incorrect state estimation mode configuration');
 end

@@ -20,6 +20,12 @@ log.isb_bds = NaN(1,N);
 
 numOfState = 5; % x,y,z,clk,clk_drift
 log.state_cov = NaN(numOfState+p.enableGLO+p.enableGAL+p.enableBDS, N);
+log.ned_cov = NaN(3, N);
+if p.est_mode == p.raps_est
+    log.state_info = log.state_cov;
+    log.raps_spec_xyz = NaN(3, N);
+    log.pos_info_ned = NaN(3, N);
+end
 if ~isempty(obs.gps)
     log.num_obs_gps = size(obs.gps(1).data.P,1); % The maximum of PRN recorded in obs data
 else

@@ -39,17 +39,17 @@ p.post_mode  = p.mode_dgnss; %%%% sps=Standard GNSS, ppp = PPP, dgnss = DGNSS
 p.IGS_enable = 1;
 p.VRS_mode = 0;
 p.double_diff = 0;
-p.elev_mark  = 10*pi/180;
+p.elev_mark  = 5*pi/180;
 p.enableGPS  = 1; % Enable GPS: 1 means enable, 0 means close
 p.enableGLO  = 0; % Enable GLO: 1 means enable, 0 means close
 p.enableGAL  = 1; % Enable GAL: 1 means enable, 0 means close
 p.enableBDS  = 1; % Enable BDS: 1 means enable, 0 means close
-p.inval = 1; % Computation time interval
+p.inval = 1; % Computation time interval 
 p.tec_tmax = 15;
 p.tec_tmin = 0;
 p.L2enable = 0;
 p.enable_vtec = false;
-p.est_mode = p.raps_est;
+p.est_mode = p.ekf_est;
 
 output = compute_gnss_ecef(p,eph,obs);
 
@@ -101,13 +101,74 @@ xlabel('Receiver time using GPS second');
 ylabel('GPS-BDS ISB, meter');grid on
 
 figure
-scatter(p.t,output.state_cov(6,:),'.')
-title('State covariance')
+subplot(311)
+scatter(p.t,sqrt(output.ned_cov(1,:)),'.')
+ylabel('Cov N, meter');grid on
+subplot(312)
+scatter(p.t,sqrt(output.ned_cov(2,:)),'.')
+ylabel('Cov E, meter');grid on
+subplot(313)
+scatter(p.t,sqrt(output.ned_cov(3,:)),'.')
+ylabel('Cov D, meter');grid on
+title('NED Pos Covariance')
 xlabel('Receiver time using GPS second');
-ylabel('meter^2');grid on
+
+figure
+subplot(311)
+scatter(p.t,sqrt(output.state_cov(1,:)),'.')
+ylabel('Cov x, meter');grid on
+subplot(312)
+scatter(p.t,sqrt(output.state_cov(2,:)),'.')
+ylabel('Cov y, meter');grid on
+subplot(313)
+scatter(p.t,sqrt(output.state_cov(3,:)),'.')
+ylabel('Cov z, meter');grid on
+title('ECEF Pos Covariance')
+xlabel('Receiver time using GPS second');
+
+if p.est_mode == p.raps_est
+    figure
+    subplot(311)
+    scatter(p.t,sqrt(output.pos_info_ned(1,:)),'.')
+    hold on
+    yline(sqrt(1/p.raps.hor_cov_spec))
+    ylabel('Infor N, meter');grid on
+    subplot(312)
+    scatter(p.t,sqrt(output.pos_info_ned(2,:)),'.')
+    hold on
+    yline(sqrt(1/p.raps.hor_cov_spec))
+    ylabel('Infor E, meter');grid on
+    subplot(313)
+    scatter(p.t,sqrt(output.pos_info_ned(3,:)),'.')
+    hold on
+    yline(sqrt(1/p.raps.ver_cov_spec))
+    ylabel('Infor D, meter');grid on
+    title('NED Pos Information')
+    xlabel('Receiver time using GPS second');
+
+    figure
+    subplot(311)
+    scatter(p.t,sqrt(output.state_info(1,:)),'.')
+    hold on
+    plot(p.t, sqrt(output.raps_spec_xyz(1,:)))
+    ylabel('Infor X, meter');grid on
+    subplot(312)
+    scatter(p.t,sqrt(output.state_info(2,:)),'.')
+    hold on
+    plot(p.t, sqrt(output.raps_spec_xyz(2,:)))
+    ylabel('Infor Y, meter');grid on
+    subplot(313)
+    scatter(p.t,sqrt(output.state_info(3,:)),'.')
+    hold on
+    plot(p.t, sqrt(output.raps_spec_xyz(3,:)))
+    ylabel('Infor Z, meter');grid on
+    title('ECEF Pos Information')
+    xlabel('Receiver time using GPS second');
+end
 
 percentage = (sum(output.hor_err < 1.0) / length(output.hor_err)) * 100
 percentage = (sum(output.hor_err < 1.5) / length(output.hor_err)) * 100
+percentage = (sum(output.err < 3.0) / length(output.hor_err)) * 100
 % figure
 % subplot(311)
 % scatter(p.t,output.ned_err(1,:),'.')

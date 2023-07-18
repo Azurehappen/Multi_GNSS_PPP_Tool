@@ -3,10 +3,15 @@ function log = save_result(p,cpt,log,i,estState,res,grdpos,epoch_t)
 log.epoch_t = [log.epoch_t, epoch_t];
 log.pos_ecef(:,i) = estState.pos;
 %------------------------%
-[pos_llh,~,~]=ecef2llh_iter(estState.pos);
-R_e2g=ll2R(pos_llh); % rotation matrix from ecef 2 geodetic frame
-err_pos = grdpos - estState.pos;
-ned_err=R_e2g*err_pos;
+% [pos_llh,~,~]=ecef2llh_iter(estState.pos);
+% R_e2g=ll2R(pos_llh); % rotation matrix from ecef 2 geodetic frame
+% err_pos = grdpos - estState.pos;
+% ned_err=R_e2g*err_pos;
+lla_gt = ecef2lla(grdpos', 'WGS84');
+wgs84 = wgs84Ellipsoid('meter');
+pos = estState.pos;
+[xNorth,yEast,zDown] = ecef2ned(pos(1),pos(2),pos(3),lla_gt(1),lla_gt(2),lla_gt(3),wgs84);
+ned_err = [xNorth;yEast;zDown];
 log.ned_err(:,i) = ned_err;
 %------------------------%
 log.ned_err_norm(i) = norm(ned_err);
@@ -34,4 +39,13 @@ log.isb_glo(i) = estState.isb_dict(p.glo.sys_num);
 log.isb_gal(i) = estState.isb_dict(p.gal.sys_num);
 log.isb_bds(i) = estState.isb_dict(p.bds.sys_num);
 log.state_cov(:,i) = diag(p.state_cov)';
+R_e2g=ll2R(lla_gt');
+ned_cov = R_e2g * p.state_cov(1:3, 1:3) * R_e2g';
+log.ned_cov(:,i) = diag(ned_cov);
+if p.est_mode == p.raps_est
+    log.state_info(:,i) = diag(p.raps_J)';
+    log.raps_spec_xyz(:,i) = p.raps_spec_xyz;
+    J_ned = R_e2g' * p.raps_J(1:3, 1:3) * R_e2g;
+    log.pos_info_ned(:,i) = diag(J_ned);
+end
 end
