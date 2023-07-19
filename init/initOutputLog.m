@@ -18,7 +18,7 @@ log.isb_glo = NaN(1,N);
 log.isb_gal = NaN(1,N);
 log.isb_bds = NaN(1,N);
 
-numOfState = 5; % x,y,z,clk,clk_drift
+numOfState = p.modeToNumUserStates(p.state_mode) + 2; % user_states,clk,clk_drift
 log.state_cov = NaN(numOfState+p.enableGLO+p.enableGAL+p.enableBDS, N);
 log.ned_cov = NaN(3, N);
 if p.est_mode == p.raps_est

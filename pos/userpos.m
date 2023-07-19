@@ -20,9 +20,9 @@ estState.isb_dict(p.glo.sys_num) = NaN;
 estState.isb_dict(p.gal.sys_num) = NaN;
 estState.isb_dict(p.bds.sys_num) = NaN;
 
-x0 = p.state0(1:4);
+x0 = p.state0(1:3);
 [H_isb,x_isb] = formIsbStatesAndH(cpt.num_sv);
-xk = [x0;x_isb];
+xk = [x0;0;x_isb];
 %------------------%
 [estState.pos,estState.clock_bias,isb_est,res] = LSsolver(p,xk,H_isb,cpt);
 j = 1;

@@ -160,6 +160,33 @@ else
 end
 end
 
+function [C] = costForEstState(x,prior,P,b,H,y,R)
+x(4:9) = [];
+x(5) = [];
+prior(4:9) = [];
+prior(5) = [];
+ex = x-prior;
+Pi = P;
+Pi(:,4:9) = [];
+Pi(4:9,:) = [];
+Pi(:,5) = [];
+Pi(5,:) = [];
+Pi = inv(Pi);
+Hi = H;
+Hi(:,4:9) = [];
+Hi(:,5) = [];
+ey = y - Hi*x;
+Ri = inv(R);
+Pb = diag(b);
+if isempty(b)
+    C1 = ex' * Pi * ex;
+    C2 =  ey' *  Ri *  ey;
+    C  = C1 + C2;
+else
+    C = ex' * Pi * ex + ey' * Pb * Ri * Pb * ey;
+end
+end
+
 %--------------------------------------------------------------------------
 function [x_post,aug_cost] = MAP(by,y,H,E_R,E_P,x_prior)
 % Maximum A Posteriori state estimate and the augmented cost function

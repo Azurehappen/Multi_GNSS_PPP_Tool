@@ -125,13 +125,6 @@ p.GLO_C1C = 1;p.GLO_C1P = 2;p.GLO_C2C = 3;p.GLO_C2P = 4;
 p.GAL_C1X = 1;p.GAL_C7X = 2;
 p.BDS_C2I = 1;p.BDS_C7I = 2;
 
-%---------------------------------------%
-% EKF parameters
-p.ekf_para.q_pos = 30^2;
-p.ekf_para.q_vel = 0;
-p.ekf_para.q_acc = 1.0^2;
-p.ekf_para.q_clkDrift = 1.0^2;
-
 % ISB model:
 % continuous time: dx(t) = u x(t) + w (See 4.6.5 in Farrell's book)
 % dP(t) = 2 u P(t) + Q
@@ -150,6 +143,22 @@ p.ekf_est = 1;
 p.map_est = 2;
 p.raps_est = 3;
 p.est_mode = p.ekf_est;
+
+%---------------------------------------%
+% EKF state mode
+p.pos_mode = 1;
+p.pva_mode = 2;
+p.state_mode = p.pva_mode;
+p.modeToNumUserStates = dictionary;
+p.modeToNumUserStates(p.pos_mode) = 3;
+p.modeToNumUserStates(p.pva_mode) = 9;
+
+%---------------------------------------%
+% EKF parameters
+p.ekf_para.q_pos = 5^2;
+p.ekf_para.q_vel = 0;
+p.ekf_para.q_acc = 4^2;
+p.ekf_para.q_clkDrift = 1.0^2;
 
 %---------------------------------------%
 % RAPS parameters
