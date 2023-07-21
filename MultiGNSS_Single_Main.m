@@ -131,46 +131,6 @@ ylabel('Cov z, meter');grid on
 title('ECEF Pos Covariance')
 xlabel('Receiver time using GPS second');
 
-if p.est_mode == p.raps_est
-    figure
-    subplot(311)
-    scatter(p.t,sqrt(output.pos_info_ned(1,:)),'.')
-    hold on
-    yline(sqrt(1/p.raps.hor_cov_spec))
-    ylabel('Infor N, meter');grid on
-    subplot(312)
-    scatter(p.t,sqrt(output.pos_info_ned(2,:)),'.')
-    hold on
-    yline(sqrt(1/p.raps.hor_cov_spec))
-    ylabel('Infor E, meter');grid on
-    subplot(313)
-    scatter(p.t,sqrt(output.pos_info_ned(3,:)),'.')
-    hold on
-    yline(sqrt(1/p.raps.ver_cov_spec))
-    ylabel('Infor D, meter');grid on
-    title('NED Pos Information')
-    xlabel('Receiver time using GPS second');
-
-    figure
-    subplot(311)
-    scatter(p.t,sqrt(output.state_info(1,:)),'.')
-    hold on
-    plot(p.t, sqrt(output.raps_spec_xyz(1,:)))
-    ylabel('Infor X, meter');grid on
-    subplot(312)
-    scatter(p.t,sqrt(output.state_info(2,:)),'.')
-    hold on
-    plot(p.t, sqrt(output.raps_spec_xyz(2,:)))
-    ylabel('Infor Y, meter');grid on
-    subplot(313)
-    scatter(p.t,sqrt(output.state_info(3,:)),'.')
-    hold on
-    plot(p.t, sqrt(output.raps_spec_xyz(3,:)))
-    ylabel('Infor Z, meter');grid on
-    title('ECEF Pos Information')
-    xlabel('Receiver time using GPS second');
-end
-
 percentage = (sum(output.hor_err < 1.0) / length(output.hor_err)) * 100
 percentage = (sum(output.hor_err < 1.5) / length(output.hor_err)) * 100
 percentage = (sum(output.err < 3.0) / length(output.hor_err)) * 100

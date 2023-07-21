@@ -42,10 +42,4 @@ log.state_cov(:,i) = diag(p.state_cov)';
 R_e2g=ll2R(lla_gt');
 ned_cov = R_e2g * p.state_cov(1:3, 1:3) * R_e2g';
 log.ned_cov(:,i) = diag(ned_cov);
-if p.est_mode == p.raps_est
-    log.state_info(:,i) = diag(p.raps_J)';
-    log.raps_spec_xyz(:,i) = p.raps_spec_xyz;
-    J_ned = R_e2g' * p.raps_J(1:3, 1:3) * R_e2g;
-    log.pos_info_ned(:,i) = diag(J_ned);
-end
 end

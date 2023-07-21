@@ -141,7 +141,6 @@ p.ekf_para.q_isb = -2 * p.ekf_para.u_isb * p.ekf_para.isb_cov;
 % estimation mode
 p.ekf_est = 1;
 p.map_est = 2;
-p.raps_est = 3;
 p.est_mode = p.ekf_est;
 
 %---------------------------------------%
@@ -159,14 +158,4 @@ p.ekf_para.q_pos = 5^2;
 p.ekf_para.q_vel = 0;
 p.ekf_para.q_acc = 4^2;
 p.ekf_para.q_clkDrift = 1.0^2;
-
-%---------------------------------------%
-% RAPS parameters
-p.raps.clk_cov_spec = (500^2)*0.05;
-p.raps.dclk_cov_spec = (50^2)*0.05;
-p.raps.isb_cov_spec = (10^2)*0.05;
-% Horizontal: alpha = 1.5, beta = 0.32; 
-% Vertical: alpha = 3, beta = 0.32.
-p.raps.hor_cov_spec = 0.72;
-p.raps.ver_cov_spec = 2.88;
 end
