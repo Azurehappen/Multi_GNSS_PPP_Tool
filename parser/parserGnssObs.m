@@ -216,7 +216,7 @@ while ~feof(obsfile)
                 idx = 1+gap;
                 for i = 1:length(glotype)
                     if idx + len <=length(line)
-                        switch(glotype{1}(1))
+                        switch(glotype{i}(1))
                             case 'C' % Psedorange
                                 if strcmp(glotype{i},'C1C')
                                     val=str2double(line(idx:idx+len));
@@ -297,7 +297,7 @@ while ~feof(obsfile)
                 idx = 1+gap;
                 for i = 1:length(galtype)
                     if idx + len <=length(line)
-                        switch(galtype{1}(1))
+                        switch(galtype{i}(1))
                             case 'C' % Psedorange
                                 if strcmp(galtype{i},'C1C')||strcmp(galtype{i},'C1X')
                                     val=str2double(line(idx:idx+len));
@@ -354,9 +354,9 @@ while ~feof(obsfile)
                 idx = 1+gap;
                 for i = 1:length(bdstype)
                     if idx + len <=length(line)
-                        switch(bdstype{1}(1))
+                        switch(bdstype{i}(1))
                             case 'C' % Psedorange
-                                if strcmp(bdstype{i},'C2I')||strcmp(bdstype{i},'C2Q')||strcmp(bdstype{i},'C2X')
+                                if strcmp(bdstype{i},'C2I')||strcmp(bdstype{i},'C2Q')||strcmp(bdstype{i},'C1I')
                                     val=str2double(line(idx:idx+len));
                                     if ~isnan(val)
                                         obs.bds(1).data.P(prn,count)=val;
@@ -372,7 +372,7 @@ while ~feof(obsfile)
                                     idx = idx + len;
                                 end
                             case 'L' % Carrier phase
-                                if strcmp(bdstype{i},'L2I')||strcmp(bdstype{i},'L2Q')||strcmp(bdstype{i},'L2X')
+                                if strcmp(bdstype{i},'L2I')||strcmp(bdstype{i},'L2Q')||strcmp(bdstype{i},'L1I')
                                     obs.bds(1).data.C(prn,count)=str2double(line(idx:idx+len));
                                     idx = idx + len;
                                 elseif strcmp(bdstype{i},'L7I')||strcmp(bdstype{i},'L7Q')||strcmp(bdstype{i},'L7X')
@@ -382,7 +382,7 @@ while ~feof(obsfile)
                                     idx = idx + len;
                                 end
                             case 'D' % Doppler
-                                if strcmp(bdstype{i},'D2I')||strcmp(bdstype{i},'D2Q')||strcmp(bdstype{i},'D2X')
+                                if strcmp(bdstype{i},'D2I')||strcmp(bdstype{i},'D2Q')||strcmp(bdstype{i},'D1I')
                                     obs.bds(1).data.D(prn,count)=str2double(line(idx:idx+len));
                                     idx = idx + len;
                                 elseif strcmp(bdstype{i},'D7I')||strcmp(bdstype{i},'D7Q')||strcmp(bdstype{i},'D7X')
@@ -392,7 +392,7 @@ while ~feof(obsfile)
                                     idx = idx + len;
                                 end
                             case 'S' % Signal strength
-                                if strcmp(bdstype{i},'S2I')||strcmp(bdstype{i},'S2Q')||strcmp(bdstype{i},'S2X')
+                                if strcmp(bdstype{i},'S2I')||strcmp(bdstype{i},'S2Q')||strcmp(bdstype{i},'S1I')
                                     obs.bds(1).data.S(prn,count)=str2double(line(idx:idx+len));
                                     idx = idx + len;
                                 elseif strcmp(bdstype{i},'S7I')||strcmp(bdstype{i},'S7Q')||strcmp(bdstype{i},'S7X')
