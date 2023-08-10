@@ -8,7 +8,7 @@ estState.isb_dict(p.gal.sys_num) = NaN;
 estState.isb_dict(p.bds.sys_num) = NaN;
 x_minus = p.state0;
 num_user_states = p.modeToNumUserStates(p.state_mode);
-[H_isb,x_isb] = formIsbStatesAndH(cpt.num_sv);
+[H_isb,x_isb] = formIsbStatesAndH(p, cpt.num_sv, p.state_mode);
 if length(x_isb) + num_user_states + 2 ~= length(p.state0)
     error('current No. of sys does not match the previous epoch');
 end
@@ -43,9 +43,14 @@ for j=1:num
     end
 end
 H_os = [H,H_isb];
-R = constructMeasNoise(p.c, cpt.elev, dt);
+R = constructMeasNoise(p, cpt.elev, cpt.svprn_mark, dt);
 % measurement residual
 res = y - r - x_minus(num_user_states+1)-off;
+[x_minus, p.state_cov, flag] = checkClockReset(p, x_minus, p.state_cov, ...
+    num_user_states+1, res, cpt);
+if flag == true
+    res = y - r - x_minus(num_user_states+1)-off;
+end
 % y - f(x0) = H (x - x0);
 zk = res + H_os * x_minus;
 switch p.est_mode

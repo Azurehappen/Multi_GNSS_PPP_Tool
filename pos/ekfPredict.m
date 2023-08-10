@@ -30,7 +30,7 @@ phi(num_user_states+1, num_user_states+2) = dt; % clk(k) = clk(k-1) + clk_drift 
 Lbias = length(state) - num_user_states - 2;
 if Lbias ~= 0
     Qd = [Q_pc, zeros(num_user_states+2, Lbias);
-          zeros(Lbias, num_user_states+2), p.ekf_para.q_isb * eye(Lbias, Lbias)];
+          zeros(Lbias, num_user_states+2), (p.ekf_para.q_isb+10^2) * eye(Lbias, Lbias)];
 else
     Qd = Q_pc;
 end

@@ -27,7 +27,6 @@ if exist(files.preload,'file')==2 % Check if the data already been parsed
     load(files.preload);
 else
     [p, eph, obs] = readDataFiles(files);
-    p.post_mode  = p.mode_dgnss; %%%% 0=Standard GNSS, 1 = PPP, 2= DGNSS
     %--------------------------------%
     [p, obs] = loadDataAndCorr(p, files, eph, obs);
     save(files.preload, 'p', 'eph', 'obs');
@@ -40,6 +39,7 @@ p.IGS_enable = 1;
 p.VRS_mode = 0;
 p.double_diff = 0;
 p.elev_mark  = 10*pi/180;
+% To use Multi-GNSS and DGNSS, GPS have  to be enabled.
 p.enableGPS  = 1; % Enable GPS: 1 means enable, 0 means close
 p.enableGLO  = 0; % Enable GLO: 1 means enable, 0 means close
 p.enableGAL  = 1; % Enable GAL: 1 means enable, 0 means close
@@ -49,7 +49,7 @@ p.tec_tmax = 15;
 p.tec_tmin = 0;
 p.L2enable = 0;
 p.enable_vtec = false;
-p.est_mode = p.raps_est;
+p.est_mode = p.ekf_est;
 p.state_mode = p.pva_mode;
 
 if p.state_mode == p.pos_mode
@@ -73,7 +73,7 @@ title('Horizontal positioning error')
 xlabel('Local time')
 ylabel('Error, unit: meter');grid on
 
-total = output.sv_num_GPS + output.sv_num_GAL + output.sv_num_BDS;
+total = output.sv_num_GPS + output.sv_num_GLO + output.sv_num_GAL + output.sv_num_BDS;
 figure
 scatter(p.t,output.sv_num_GPS,'.')
 hold on

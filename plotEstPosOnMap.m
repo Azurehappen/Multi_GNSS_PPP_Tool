@@ -5,21 +5,23 @@ lla = ecef2lla(pos_ecef');
 
 % Create a figure
 figure;
-
 % Create a colormap for the errors
-colors = [0 1 0; 0.5 0 0.5; 1 0 0]; % green, purple, red
-colormap(colors);
-
+colors = [0 1 0; 0 1 1;0.5 0 0.5; 1 0 0; ]; % green, blue, purple, red
+% colormap(colors);
 % Create a color scale based on the error
-c = discretize(pos_error, [0, 1, 3, inf]);
-
+c = discretize(pos_error, [0, 1, 3, 80, inf]);
+% Create the geographic axes
+ax = geoaxes;
+geobasemap(ax, 'satellite');
 % Plot the positions with color based on error
-geoscatter(lla(:,1), lla(:,2), 10, c, 'filled');
-
+hold on
+for i = 1:max(c)
+    idx = c == i;
+    geoscatter(ax, lla(idx,1), lla(idx,2), 10, colors(i,:), 'filled');
+end
+hold off
 % Add a colorbar
+colormap(colors)
 cb = colorbar;
-cb.Ticks = [1/6, 0.5, 5/6]; % Adjust these values as needed
-cb.TickLabels = {'< 1.0m', '1.0m-3m', '> 3m'};
-
-% Set the map axes
-geobasemap('satellite');
+cb.Ticks = [1/8, 3/8, 5/8, 7/8]; % Adjust these values as needed
+cb.TickLabels = {'< 1.0m', '1.0m-3m', '3-80m', '>80m'};

@@ -24,7 +24,7 @@ function [sat, dt_sv] = eph2pos(p, eph, prn, tidx, t_sv,sys_type,orbit_corr)
 %DELAY
 sat.pos_ecef = NaN(3,1);
 sat.v_ecef = NaN(3,1);
-if p.post_mode == 1
+if p.post_mode == p.mode_ppp
     % Save the precise pos and velocity in PPP mode
     sat.pos_prc = NaN(3,1);
     %     sat.v_prc = NaN(3,1);

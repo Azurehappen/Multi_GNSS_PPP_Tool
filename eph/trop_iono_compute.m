@@ -1,7 +1,10 @@
 function cpt = trop_iono_compute(p,eph,cpt,obs,re_pos,tdoy,user_gpst,rovert_posix)
 % Compute tropospheric delay and iono delay for the measurements
 
-[p.lat, p.lon, p.h_r, ~, ~, ~] = ecef2llh(p,re_pos);
+lla = ecef2lla(re_pos', 'WGS84');
+p.lat_deg = lla(1);
+p.lon_deg = lla(2);
+p.h_r = lla(3);
 %%%%% convert geodetic height to orthometric height
 %%%%% website: https://www.mathworks.com/matlabcentral/answers/97079-how-can-i-extract-the-orthometric-height-from-the-ellpsoiidal-height-in-the-mapping-toolbox-2-5-r20
 % load geoid;
@@ -10,10 +13,11 @@ function cpt = trop_iono_compute(p,eph,cpt,obs,re_pos,tdoy,user_gpst,rovert_posi
 
 % ecef2llh longitude range is [-pi,+pi] but IGGTrop takes longitude input
 % range is [0,2pi]. This mapping is done here. 
-if p.lon <= 0
-    lon_deg = mod(rad2deg(p.lon),360);
+lon_deg = p.lon_deg;
+if p.lon_deg <= 0
+    lon_deg = mod(p.lon_deg,360);
 end
-N = geoidheight(rad2deg(p.lat),lon_deg);
+N = geoidheight(p.lat_deg,lon_deg);
 %%%%% orthometric height of the receiver (Groves 2.121)
 H_r=p.h_r-N;
 % computing tropospheric delay for the reciever (s) using various
@@ -26,7 +30,7 @@ for i = 1:len
     % tropo delay (meter) computation using IGGTrop model
     % Reference Paper: IGGtrop_SH & IGGtrop_rH: Two Improved Empirical
     % Tropospheric Delay Models Based on Vertical Reduction Functions 
-    IGGtrop_ZenithTropDelay = IGGtropSH_bl(lon_deg,rad2deg(p.lat),H_r/1000,tdoy);
+    IGGtrop_ZenithTropDelay = IGGtropSH_bl(lon_deg,p.lat_deg,H_r/1000,tdoy);
     cpt.trop_delay(i) = (1.001/sqrt(0.002001 + sin(cpt.elev(i))^2))*IGGtrop_ZenithTropDelay;
 %-----------------------------------%    
     % Iono data from USTEC: https://www.ngdc.noaa.gov/stp/iono/ustec/products/    

@@ -74,7 +74,7 @@ if ~isempty(iono_map_idx)
 m=(p.Re*cos(elev)/(p.Re+p.h_iono));
 
 %%%%%% pierce point calculation
-[lat_p,lon_p]=pierce_point_calc(p.lat,p.lon,az,elev,p);
+[lat_p,lon_p]=pierce_point_calc(deg2rad(p.lat_deg),deg2rad(p.lon_deg),az,elev,p);
 
 
 

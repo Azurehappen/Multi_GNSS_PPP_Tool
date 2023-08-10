@@ -75,14 +75,15 @@ for i = 1:p.inval:N
     cpt.tp = [gpslog.tp;glolog.tp;gallog.tp;bdslog.tp];
     cpt.tp(ind) = [];
     cpt.num_sv = [gpslog.num_sv,glolog.num_sv,gallog.num_sv,bdslog.num_sv];
-    if sum(cpt.num_sv) < p.min_sv
+    if sum(cpt.num_sv) < p.min_sv + sum(cpt.num_sv~=0) - 1 ...
+            || (p.enableGPS  == 1 && gpslog.num_sv == 0)
         continue;
     end
     % elevation & azimuth
     cpt.elev = NaN(length(cpt.corr_range),1); cpt.az = NaN(length(cpt.corr_range),1);
     % trop delay and iono delay
     cpt.trop_delay = NaN(length(cpt.corr_range),1); cpt.iono_delay = NaN(length(cpt.corr_range),1);
-    if isempty(log.epoch_t) || seconds(obs.datetime(i) - log.epoch_t(end)) > 1.5
+    if isempty(log.epoch_t) || (seconds(obs.datetime(i) - log.epoch_t(end)) > 1.5 && p.post_mode ~= p.mode_sps)
         [estState,res] = userpos(p,cpt);
         if p.post_mode == 1
             p.mk = 1;
@@ -101,8 +102,8 @@ for i = 1:p.inval:N
             log.epoch_t = [log.epoch_t, obs.datetime(i)];
             %log = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
         end
-        continue;
-    else
+        dt = 0;
+    elseif p.post_mode ~= p.mode_sps
         dt = seconds(obs.datetime(i) - log.epoch_t(end));
         % EKF predict
         [p.state0, p.state_cov] = ekfPredict(p, p.state0, p.state_cov, dt);
@@ -112,7 +113,7 @@ for i = 1:p.inval:N
     cpt = earth_rotation_corr(p,cpt,estState.clock_bias/p.c);
     % Check elevation
     cpt = elevaz_check(p,cpt,p.state0(1:3));
-    if sum(cpt.num_sv) < p.min_sv
+    if sum(cpt.num_sv) <= p.min_sv + sum(cpt.num_sv~=0) - 1
         continue;
     end
     switch p.post_mode
@@ -129,7 +130,7 @@ for i = 1:p.inval:N
             cpt.corr_range = cpt.corr_range - cpt.trop_delay - cpt.iono_delay;
             [estState,res] = userpos(p,cpt);
             log = save_result(p,cpt,log,i,estState,res,grdpos,obs.datetime(i));
-            %                     end
+            % end
         case p.mode_ppp % PPP
             tdoy = doy(obs.tr_prime(1:3,i)); % Day of year
             [rt.week, rt.dow, rt.sow] = date2gnsst(obs.tr_prime(:,i)');

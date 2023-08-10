@@ -72,47 +72,49 @@ for prn = 1 :len_prn
         end
     end
 
-    if (obs_range(prn)~=0)&&(~isnan(obs_range(prn)))&& prn<=size(eph_info.a_f0,1)
-        tp_prime = obs_range(prn)/p.c;
-        t_sv = obs_tr-tp_prime;
-        tidx = ephtidx(eph_info.t_oc{prn},t_sv,eph_info.SV_health(prn,:),message_duration);
-        % Check the signal strength and sv health (health message 0 means ok)
-        if ~isempty(tidx) && Strength(prn)>=p.sig_strg
-            switch(sys_type)
-                % compute ephemeris to satellite position and clock bias
-                case 'gps'
-                    [sat, dt_sv] = eph2pos(p,eph_info,prn,tidx,t_sv,'gps',orbit_corr);
-                    if ~isnan(sat.pos_ecef(1))
-                        satlog.svprn_mark(prn) = p.gps.sys_num;satlog.prn_record(prn) = prn;
-                    end
-                case 'glo'
-                    [sat, dt_sv] = geph2pos(p,eph_info,prn,tidx,t_sv,'glo',orbit_corr);
-                    if ~isnan(sat.pos_ecef(1))
-                        satlog.svprn_mark(prn) = p.glo.sys_num;satlog.prn_record(prn) = prn;
-                    end
-                 case 'gal'
-                    [sat, dt_sv] = eph2pos(p,eph_info,prn,tidx,t_sv,'gal',orbit_corr);
-                    if ~isnan(sat.pos_ecef(1))
-                        satlog.svprn_mark(prn) = p.gal.sys_num;satlog.prn_record(prn) = prn;
-                    end
-                case 'bds'
-                    [sat, dt_sv] = eph2pos(p,eph_info,prn,tidx,t_sv,'bds',orbit_corr); 
-                    if ~isnan(sat.pos_ecef(1))
-                        satlog.svprn_mark(prn) = p.bds.sys_num;satlog.prn_record(prn) = prn;
-                    end
-            end
+    if obs_range(prn) == 0 || isnan(obs_range(prn)) || prn>size(eph_info.SV_health,1)
+        continue;
+    end
+ 
+    tp_prime = obs_range(prn)/p.c;
+    t_sv = obs_tr-tp_prime;
+    tidx = ephtidx(eph_info.t_oc{prn},t_sv,eph_info.SV_health(prn,:),message_duration);
+    % Check the signal strength and sv health (health message 0 means ok)
+    if isempty(tidx) || Strength(prn) < p.sig_strg
+        continue;
+    end
+    switch(sys_type)
+        % compute ephemeris to satellite position and clock bias
+        case 'gps'
+            [sat, dt_sv] = eph2pos(p,eph_info,prn,tidx,t_sv,'gps',orbit_corr);
             if ~isnan(sat.pos_ecef(1))
-                satlog.tp(prn) = tp_prime+dt_sv;
-                satlog.s_pos_ecef(:,prn) = sat.pos_ecef;
-                satlog.s_v_ecef(:,prn) = sat.v_ecef;
-                if p.post_mode == 1
-                    satlog.s_pos_prc(:,prn) = sat.pos_prc;
-                end
-                % ts = tr - rho/c - dt_sv - dt_corr + code_bias;
-                satlog.corr_range(prn) = obs_range(prn)+p.c*dt_sv+clock_corr_m;
-                
+                satlog.svprn_mark(prn) = p.gps.sys_num;satlog.prn_record(prn) = prn;
             end
+        case 'glo'
+            [sat, dt_sv] = geph2pos(p,eph_info,prn,tidx,t_sv);
+            if ~isnan(sat.pos_ecef(1))
+                satlog.svprn_mark(prn) = p.glo.sys_num;satlog.prn_record(prn) = prn;
+            end
+         case 'gal'
+            [sat, dt_sv] = eph2pos(p,eph_info,prn,tidx,t_sv,'gal',orbit_corr);
+            if ~isnan(sat.pos_ecef(1))
+                satlog.svprn_mark(prn) = p.gal.sys_num;satlog.prn_record(prn) = prn;
+            end
+        case 'bds'
+            [sat, dt_sv] = eph2pos(p,eph_info,prn,tidx,t_sv,'bds',orbit_corr); 
+            if ~isnan(sat.pos_ecef(1))
+                satlog.svprn_mark(prn) = p.bds.sys_num;satlog.prn_record(prn) = prn;
+            end
+    end
+    if ~isnan(sat.pos_ecef(1))
+        satlog.tp(prn) = tp_prime+dt_sv;
+        satlog.s_pos_ecef(:,prn) = sat.pos_ecef;
+        satlog.s_v_ecef(:,prn) = sat.v_ecef;
+        if p.post_mode == 1
+            satlog.s_pos_prc(:,prn) = sat.pos_prc;
         end
+        % ts = tr - rho/c - dt_sv - dt_corr + code_bias;
+        satlog.corr_range(prn) = obs_range(prn)+p.c*dt_sv+clock_corr_m;
     end
 end
 satlog.num_sv = sum(satlog.svprn_mark~=0);

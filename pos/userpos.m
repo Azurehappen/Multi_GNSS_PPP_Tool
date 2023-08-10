@@ -21,11 +21,14 @@ estState.isb_dict(p.gal.sys_num) = NaN;
 estState.isb_dict(p.bds.sys_num) = NaN;
 
 x0 = p.state0(1:3);
-[H_isb,x_isb] = formIsbStatesAndH(cpt.num_sv);
+[H_isb,x_isb] = formIsbStatesAndH(p, cpt.num_sv, p.mode_sps);
 xk = [x0;0;x_isb];
 %------------------%
 [estState.pos,estState.clock_bias,isb_est,res] = LSsolver(p,xk,H_isb,cpt);
 j = 1;
+if p.enableGPS  == 0
+    return;
+end
 for i = 2:length(cpt.num_sv)
     if cpt.num_sv(i) ~= 0
         estState.isb_dict(i) = isb_est(j);

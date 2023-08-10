@@ -44,55 +44,61 @@ for i = 1:length(cpt.corr_range)
             eph_info = p.eph_b.bds;
             obs_tr = obstr_gps - p.bds.lps_gps;% Correct time diff from GPS time to BDS time
     end
-    if (pseR~=0)&&(~isnan(pseR)) && prn<=size(eph_info.t_oc,1)
-        tp_prime = pseR/p.c;
-        t_sv = obs_tr - tp_prime;
-        %---------------------------------% Find the time index in eph data
-        teph = ephtidx(eph_info.t_oc{prn},t_sv,eph_info.SV_health(prn,:),message_duration);
-        %---------------------------------%
-        % Check the signal strength and sv health (health message 0 means ok)
-        if ~isempty(teph) && Strength>=p.sig_strg
-            switch(sys_type)
-                % compute ephemeris to satellite position and clock bias
-                case p.gps.sys_num
-                    [sat, dt_sv] = eph2pos(p,eph_info,prn,teph,t_sv,'gps',[]);
-                case p.glo.sys_num
-                    [sat, dt_sv] = geph2pos(p,eph_info,prn,teph,t_sv,'glo',[]);
-                case p.gal.sys_num
-                    [sat, dt_sv] = eph2pos(p,eph_info,prn,teph,t_sv,'gal',[]);
-                case p.bds.sys_num
-                    [sat, dt_sv] = eph2pos(p,eph_info,prn,teph,t_sv,'bds',[]);
-            end
-            if isnan(sat.pos_ecef(1))
-                continue;
-            end
-            range = norm(p.P_base-sat.pos_ecef)+sagnac(p,sat.pos_ecef,p.P_base);
-            diff_corr(i) = pseR + p.c*dt_sv - range; % The correctoin here include receiver clock bias.
-        else
-            cpt.num_sv(sys_type) = cpt.num_sv(sys_type)-1;
-            cpt.svprn_mark(ind_sv(i)) = 0;
-            cpt.prn_record(ind_sv(i)) = 0;
-        end
-    else
+    if pseR == 0 || isnan(pseR) || prn>size(eph_info.SV_health,1)
         cpt.num_sv(sys_type) = cpt.num_sv(sys_type)-1;
         cpt.svprn_mark(ind_sv(i)) = 0;
         cpt.prn_record(ind_sv(i)) = 0;
+        continue;
+    end
+    tp_prime = pseR/p.c;
+    t_sv = obs_tr - tp_prime;
+    %---------------------------------% Find the time index in eph data
+    teph = ephtidx(eph_info.t_oc{prn},t_sv,eph_info.SV_health(prn,:),message_duration);
+    %---------------------------------%
+    % Check the signal strength and sv health (health message 0 means ok)
+    if isempty(teph) || Strength < p.sig_strg
+        cpt.num_sv(sys_type) = cpt.num_sv(sys_type)-1;
+        cpt.svprn_mark(ind_sv(i)) = 0;
+        cpt.prn_record(ind_sv(i)) = 0;
+        continue;
+    end
+    switch(sys_type)
+        % compute ephemeris to satellite position and clock bias
+        case p.gps.sys_num
+            [sat, dt_sv] = eph2pos(p,eph_info,prn,teph,t_sv,'gps',[]);
+        case p.glo.sys_num
+            [sat, dt_sv] = geph2pos(p,eph_info,prn,teph,t_sv);
+        case p.gal.sys_num
+            [sat, dt_sv] = eph2pos(p,eph_info,prn,teph,t_sv,'gal',[]);
+        case p.bds.sys_num
+            [sat, dt_sv] = eph2pos(p,eph_info,prn,teph,t_sv,'bds',[]);
+    end
+    if isnan(sat.pos_ecef(1))
+        continue;
+    end
+    range = norm(p.P_base-sat.pos_ecef)+sagnac(p,sat.pos_ecef,p.P_base);
+    diff_corr(i) = pseR + p.c*dt_sv - range; % The correctoin here include receiver clock bias.
+end
+% Get the field names
+fields = fieldnames(cpt);
+% Find indices to delete
+del_ind = find(isnan(diff_corr));
+% Loop over each field
+for i = 1:length(fields)
+    % Get the field name
+    field = fields{i};
+    if strcmp(field,'num_sv')
+        continue;
+    end
+    % Check the size of the field
+    if size(cpt.(field), 1) == 3
+        % If the field is pos, vel...
+        cpt.(field)(:, del_ind) = [];
+    else
+        cpt.(field)(del_ind, :) = [];
     end
 end
-
-% Delete the data that has no diff correction
-del_ind = find(isnan(diff_corr));
+% Update diff_corr
 diff_corr(del_ind) = [];
-cpt.corr_range(del_ind) = [];
-cpt.s_pos_ecef(:,del_ind) = [];
-cpt.s_v_ecef(:,del_ind) = [];
-cpt.tp(del_ind) = [];
-cpt.elev(del_ind) = [];
-cpt.az(del_ind) = [];
-if isfield(cpt, 'sat_pos_Rcorr')
-    cpt.sat_pos_Rcorr(:,del_ind) = [];
-    cpt.sat_posprc_Rcorr(:,del_ind) = [];
-    cpt.sat_v_Rcorr(:,del_ind) = [];
-end
 cpt.diff_corr = diff_corr;
 end

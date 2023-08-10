@@ -1,7 +1,7 @@
 function [p, obs] = loadDataAndCorr(p, files, eph, obs)
 
 % PPP data
-if (p.post_mode==1 || p.post_mode==3)% If PPP, parse the iono correction
+if isfield(files, 'ssr') && ~isempty(files.ssr) % If PPP, parse the iono correction
     [p.orbit_dict, p.clock_dict] = parseSsrObtClkCorr(files.ssr);
     p.vtec_dict = parseSsrVtec(files.vtec);
     p.code_bia = parser_bia(p,files.code_bias);
@@ -80,7 +80,7 @@ if p.L2enable == true && p.bia_type == 1
 end
 p.eph_b = eph; p.obs_b = [];
 % Base station data
-if p.post_mode==p.mode_dgnss && ~isempty(files.data_base)
+if isfield(files, 'data_base')
     % Get observables data (.obs file, RINEX verion 3.03)
     p.obs_b = parserGnssObs(p, files.data_base);
 end

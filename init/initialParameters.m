@@ -9,8 +9,12 @@ p.post_mode = 1;%%%% 0=Standard GNSS, 1 = PPP, 2= DGNSS
 p.iono_map=0; %%%%% 0=USTEC; 1=IGS ionex
 p.ins=1;    %%%%%%% 0=no imu data; 1=use simulated/real imu data
 p.imu_freq=200; %%%%%% frequency rate for simulated/real IMU data
-p.P_base = [-2430697.699;-4704189.201;3544329.103]; % Base station position
-p.Grdpos = files.Grdpos; % Ground truth of rover
+if ~isempty(p.obs_b)
+    if ~isfield(files, 'base_pos')
+        error('Base obs available, but base pos is not provided.')
+    end
+    p.P_base = files.base_pos; % Base station position
+end
 p.freq = 1; %%%% 1 = single frequency, 2 = dual frequency
 p.Ek0 = 0; % Initial condition of Ek
 p.enableGPS = 1; % Enable GPS: 1 means enable, 0 means close
@@ -60,7 +64,7 @@ p.ep = sqrt((p.a^2-p.b^2)/(p.b^2));     % second eccentricity of ellipsoid
 %-------------------------------------------------------------------------%
 % Treshold
 p.elev_mark = 10*pi/180; % Elevation treshold
-p.sig_strg = 0; % Signal strength treshold
+p.sig_strg = 20; % Signal strength treshold
 p.satdelta = 1e-6; % In function 'eph2pos', the threshold for sat pos convergence
 p.min_sv = 5; % the minimum of the number of satellites
 p.LSthrsh = 1e-8; % threshold of delta_x in LS solver
